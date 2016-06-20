@@ -316,7 +316,7 @@ function frame:ARTIFACT_XP_UPDATE()
 	if numRanksPurchased ~= equipped.numRanksPurchased then
 		-- both learning traits and artifact respec trigger ARTIFACT_XP_UPDATE
 		-- however respec has a positiv diff and learning traits has a negativ one
-		self:ScanTraits()
+		self:ScanTraits(equippedID)
 		callback:Fire("ARTIFACT_TRAITS_UPDATE", itemID, artifacts[itemID].numTraits, numRanksPurchased, CopyTable(artifacts[itemID].traits))
 	end
 
