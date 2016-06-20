@@ -384,6 +384,15 @@ function lib:GetArtifactRelics(artifactID)
 	end
 end
 
+function lib:GetArtifactPower(artifactID)
+	artifactID = artifactID or equippedID
+	for itemID, data in pairs(artifacts) do
+		if itemID == artifactID then
+			return artifactID, data.unspentPower, data.power, data.maxPower, data.powerForNextTrait, data.numRanksPurchased, data.numRanksPurchasable
+		end
+	end
+end
+
 function lib:ForceUpdate()
 	frame:InitializeScan("FORCE_UPDATE")
 end
