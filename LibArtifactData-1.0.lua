@@ -370,7 +370,7 @@ function lib:GetArtifactTraits(artifactID)
 	artifactID = artifactID or equippedID
 	for itemID, data in pairs(artifacts) do
 		if itemID == artifactID then
-			return CopyTable(data.traits)
+			return artifactID, CopyTable(data.traits)
 		end
 	end
 end
@@ -379,7 +379,7 @@ function lib:GetArtifactRelics(artifactID)
 	artifactID = artifactID or equippedID
 	for itemID, data in pairs(artifacts) do
 		if itemID == artifactID then
-			return CopyTable(data.relics)
+			return artifactID, CopyTable(data.relics)
 		end
 	end
 end
