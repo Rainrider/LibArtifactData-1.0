@@ -318,7 +318,7 @@ function frame:ARTIFACT_XP_UPDATE()
 		equipped.numRanksPurchased = numRanksPurchased
 		equipped.numRanksPurchasable = numRanksPurchasable
 		equipped.powerForNextTrait = maxPower - power
-		callback:Fire("ARTIFACT_XP_UPDATED", diff, unspentPower, power, maxPower, maxPower - power, numRanksPurchasable)
+		callback:Fire("ARTIFACT_XP_UPDATED", itemID, diff, unspentPower, power, maxPower, maxPower - power, numRanksPurchasable)
 	end
 end
 
