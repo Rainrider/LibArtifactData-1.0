@@ -192,7 +192,7 @@ function frame:GetArtifactKnowledge()
 	if knowledgeMultiplier ~= mult or knowledgeLevel ~= kLvl then
 		knowledgeLevel = kLvl
 		knowledgeMultiplier = mult
-		callback:Fire("Artifact_Knowledge_Changed", knowledgeLevel, knowledgeMultiplier)
+		callback:Fire("ARTIFACT_KNOWLEDGE_CHANGED", knowledgeLevel, knowledgeMultiplier)
 	end
 end
 
@@ -308,7 +308,7 @@ function frame:ARTIFACT_XP_UPDATE()
 		-- both learning traits and artifact respec trigger ARTIFACT_XP_UPDATE
 		-- however respec has a positiv diff and learning traits has a negativ one
 		self:ScanTraits(equippedID)
-		callback:Fire("ARTIFACT_TRAITS_UPDATE", itemID, numRanksPurchased, CopyTable(artifacts[itemID].traits))
+		callback:Fire("ARTIFACT_TRAITS_UPDATED", itemID, numRanksPurchased, CopyTable(artifacts[itemID].traits))
 	end
 
 	if diff ~= 0 then
@@ -318,7 +318,7 @@ function frame:ARTIFACT_XP_UPDATE()
 		equipped.numRanksPurchased = numRanksPurchased
 		equipped.numRanksPurchasable = numRanksPurchasable
 		equipped.powerForNextTrait = maxPower - power
-		callback:Fire("ARTIFACT_XP_UPDATE", diff, unspentPower, power, maxPower, maxPower - power, numRanksPurchasable)
+		callback:Fire("ARTIFACT_XP_UPDATED", diff, unspentPower, power, maxPower, maxPower - power, numRanksPurchasable)
 	end
 end
 
