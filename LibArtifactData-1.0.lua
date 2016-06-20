@@ -105,11 +105,12 @@ function frame:InformEquippedArtifactChanged(artifactID)
 	end
 end
 
-function frame:StoreArtifact(artifactID, name, icon, numTraits, numRanksPurchased, numRanksPurchasable, power, maxPower, traits, relics)
+function frame:StoreArtifact(artifactID, name, icon, unspentPower, numTraits, numRanksPurchased, numRanksPurchasable, power, maxPower, traits, relics)
 	if not artifacts[artifactID] then
 		artifacts[artifactID] = {
 			name = name,
 			icon = icon,
+			unspentPower = unspentPower,
 			numTraits = numTraits,
 			numRanksPurchased = numRanksPurchased,
 			numRanksPurchasable = numRanksPurchasable,
@@ -122,6 +123,7 @@ function frame:StoreArtifact(artifactID, name, icon, numTraits, numRanksPurchase
 		callback:Fire("ARTIFACT_ADDED", artifactID)
 	else
 		local current = artifacts[artifactID]
+		current.unspentPower = unspentPower
 		current.numTraits = numTraits
 		current.numRanksPurchased = numRanksPurchased -- numRanksPurchased does not include bonus traits from relics
 		current.numRanksPurchasable = numRanksPurchasable
@@ -210,7 +212,7 @@ function frame:GetViewedArtifactData()
 	local numRanksPurchasable, power, maxPower = GetNumPurchasableTraits(numRanksPurchased, unspentPower)
 	local numTraits, traits = self:ScanTraits()
 	local relics = self:ScanRelics()
-	self:StoreArtifact(itemID, name, icon, numTraits, numRanksPurchased, numRanksPurchasable, power, maxPower, traits, relics)
+	self:StoreArtifact(itemID, name, icon, unspentPower, numTraits, numRanksPurchased, numRanksPurchasable, power, maxPower, traits, relics)
 
 	if IsViewedArtifactEquipped() then
 		self:InformEquippedArtifactChanged(itemID)
@@ -308,23 +310,25 @@ function frame:ARTIFACT_XP_UPDATE()
 	local numRanksPurchasable, power, maxPower = GetNumPurchasableTraits(numRanksPurchased, unspentPower)
 
 	local equipped = artifacts[itemID]
-	local diff = power - equipped.power
+	local diff = unspentPower - equipped.unspentPower
 	Debug("ARTIFACT_XP_UPDATE", "diff", diff)
 	if diff ~= 0 then
+		equipped.unspentPower = unspentPower
 		equipped.power = power
 		equipped.maxPower = maxPower
+		equipped.numRanksPurchased = numRanksPurchased
 		equipped.numRanksPurchasable = numRanksPurchasable
 		equipped.powerForNextTrait = maxPower - power
 	end
 
 	if diff > 0 then
 		-- artifact power gained
-		callback:Fire("ARTIFACT_XP_UPDATE", power, maxPower, maxPower - power, numRanksPurchasable)
+		callback:Fire("ARTIFACT_XP_UPDATE", unspentPower, power, maxPower, maxPower - power, numRanksPurchasable)
 	elseif diff < 0 then
-		Debug("ARTIFACT_XP_UPDATE", "numRanksPurchased", numRanksPurchased, equipped.numRanksPurchased)
-		-- artifact power spent (new ranks purchased)
-		-- TODO: ScanTraits; equipped.numRanksPurchased = numRanksPurchased
-		-- callback:Fire("ARTIFACT_TRAITS_UPDATE")
+		Debug("ARTIFACT_XP_UPDATE", "numRanksPurchased", numRanksPurchased)
+		-- spending power only possible at forge => ArtifactFrame is open
+		self:ScanTraits()
+		callback:Fire("ARTIFACT_TRAITS_UPDATE", itemID, artifacts[itemID].numTraits, numRanksPurchased, CopyTable(artifacts[itemID].traits))
 	end
 end
 
