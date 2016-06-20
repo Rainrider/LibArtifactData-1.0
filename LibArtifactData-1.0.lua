@@ -289,9 +289,10 @@ function frame:ADDON_LOADED(name)
 end
 
 function frame:PLAYER_ENTERING_WORLD()
-	--self:InitializeScan("ARTIFACT_CLOSE")
-	_G.C_Timer.After(5, function() frame:InitializeScan() end)
-	self:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
+	_G.C_Timer.After(5, function()
+		frame:InitializeScan()
+		frame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
+	end)
 end
 
 function frame:ARTIFACT_UPDATE(newItem)
