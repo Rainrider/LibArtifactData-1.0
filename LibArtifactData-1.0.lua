@@ -384,6 +384,10 @@ function lib:GetArtifactPower(artifactID)
 	end
 end
 
+function lib:GetArtifactKnowledge()
+	return knowledgeLevel, knowledgeMultiplier
+end
+
 function lib:ForceUpdate()
 	frame:InitializeScan("FORCE_UPDATE")
 end
