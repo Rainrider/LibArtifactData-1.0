@@ -105,13 +105,12 @@ function frame:InformEquippedArtifactChanged(artifactID)
 	end
 end
 
-function frame:StoreArtifact(artifactID, name, icon, unspentPower, numTraits, numRanksPurchased, numRanksPurchasable, power, maxPower, traits, relics)
+function frame:StoreArtifact(artifactID, name, icon, unspentPower, numRanksPurchased, numRanksPurchasable, power, maxPower, traits, relics)
 	if not artifacts[artifactID] then
 		artifacts[artifactID] = {
 			name = name,
 			icon = icon,
 			unspentPower = unspentPower,
-			numTraits = numTraits,
 			numRanksPurchased = numRanksPurchased,
 			numRanksPurchasable = numRanksPurchasable,
 			power = power,
@@ -124,7 +123,6 @@ function frame:StoreArtifact(artifactID, name, icon, unspentPower, numTraits, nu
 	else
 		local current = artifacts[artifactID]
 		current.unspentPower = unspentPower
-		current.numTraits = numTraits
 		current.numRanksPurchased = numRanksPurchased -- numRanksPurchased does not include bonus traits from relics
 		current.numRanksPurchasable = numRanksPurchasable
 		current.power = power
@@ -136,19 +134,13 @@ function frame:StoreArtifact(artifactID, name, icon, unspentPower, numTraits, nu
 end
 
 function frame:ScanTraits(artifactID)
-	-- TODO
-	-- learning traits fires SPELLS_CHANGED, maybe ARTIFACT_XP_UPDATE too
-	-- on SPELLS_CHANGED scan the traits
-	-- hook ArtifactFrame:Close() to unregister SPELLS_CHANGED
 	local traits = {}
-	local numTraits = 0
 	local powers = GetPowers()
 
 	for i = 1, #powers do
 		local traitID = powers[i]
 		local spellID, _, currentRank, maxRank, bonusRanks, _, _, _, isStart, isGold, isFinal = GetPowerInfo(traitID)
 		if currentRank > 0 then
-			numTraits = numTraits + 1
 			local name, _, icon = GetSpellInfo(spellID)
 			traits[#traits + 1] = {
 				traitID = traitID,
@@ -167,10 +159,9 @@ function frame:ScanTraits(artifactID)
 
 	if artifactID then
 		artifacts[artifactID].traits = traits
-		artifacts[artifactID].numTraits = numTraits
 	end
 
-	return numTraits, traits
+	return traits
 end
 
 function frame:ScanRelics(artifactID)
@@ -210,9 +201,9 @@ function frame:GetViewedArtifactData()
 	local itemID, _, name, icon, unspentPower, numRanksPurchased = GetArtifactInfo() -- TODO: appearance stuff needed? altItemID ?
 	Debug("GetViewedArtifactData", name, itemID)
 	local numRanksPurchasable, power, maxPower = GetNumPurchasableTraits(numRanksPurchased, unspentPower)
-	local numTraits, traits = self:ScanTraits()
+	local traits = self:ScanTraits()
 	local relics = self:ScanRelics()
-	self:StoreArtifact(itemID, name, icon, unspentPower, numTraits, numRanksPurchased, numRanksPurchasable, power, maxPower, traits, relics)
+	self:StoreArtifact(itemID, name, icon, unspentPower, numRanksPurchased, numRanksPurchasable, power, maxPower, traits, relics)
 
 	if IsViewedArtifactEquipped() then
 		self:InformEquippedArtifactChanged(itemID)
@@ -317,7 +308,7 @@ function frame:ARTIFACT_XP_UPDATE()
 		-- both learning traits and artifact respec trigger ARTIFACT_XP_UPDATE
 		-- however respec has a positiv diff and learning traits has a negativ one
 		self:ScanTraits(equippedID)
-		callback:Fire("ARTIFACT_TRAITS_UPDATE", itemID, artifacts[itemID].numTraits, numRanksPurchased, CopyTable(artifacts[itemID].traits))
+		callback:Fire("ARTIFACT_TRAITS_UPDATE", itemID, numRanksPurchased, CopyTable(artifacts[itemID].traits))
 	end
 
 	if diff ~= 0 then
