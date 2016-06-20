@@ -115,7 +115,7 @@ function frame:StoreArtifact(artifactID, name, icon, unspentPower, numRanksPurch
 			numRanksPurchasable = numRanksPurchasable,
 			power = power,
 			maxPower = maxPower,
-			powerForNextTrait = maxPower - power,
+			powerForNextRank = maxPower - power,
 			traits = traits,
 			relics = relics,
 		}
@@ -127,7 +127,7 @@ function frame:StoreArtifact(artifactID, name, icon, unspentPower, numRanksPurch
 		current.numRanksPurchasable = numRanksPurchasable
 		current.power = power
 		current.maxPower = maxPower
-		current.powerForNextTrait = maxPower - power
+		current.powerForNextRank = maxPower - power
 		current.traits = traits
 		current.relics = relics
 	end
@@ -317,7 +317,7 @@ function frame:ARTIFACT_XP_UPDATE()
 		equipped.maxPower = maxPower
 		equipped.numRanksPurchased = numRanksPurchased
 		equipped.numRanksPurchasable = numRanksPurchasable
-		equipped.powerForNextTrait = maxPower - power
+		equipped.powerForNextRank = maxPower - power
 		callback:Fire("ARTIFACT_XP_UPDATED", itemID, diff, unspentPower, power, maxPower, maxPower - power, numRanksPurchasable)
 	end
 end
@@ -379,7 +379,7 @@ function lib:GetArtifactPower(artifactID)
 	artifactID = artifactID or equippedID
 	for itemID, data in pairs(artifacts) do
 		if itemID == artifactID then
-			return artifactID, data.unspentPower, data.power, data.maxPower, data.powerForNextTrait, data.numRanksPurchased, data.numRanksPurchasable
+			return artifactID, data.unspentPower, data.power, data.maxPower, data.powerForNextRank, data.numRanksPurchased, data.numRanksPurchasable
 		end
 	end
 end
