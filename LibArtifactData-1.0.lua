@@ -312,7 +312,14 @@ function frame:ARTIFACT_XP_UPDATE()
 
 	local equipped = artifacts[itemID]
 	local diff = unspentPower - equipped.unspentPower
-	Debug("ARTIFACT_XP_UPDATE", "diff", diff)
+
+	if numRanksPurchased ~= equipped.numRanksPurchased then
+		-- both learning traits and artifact respec trigger ARTIFACT_XP_UPDATE
+		-- however respec has a positiv diff and learning traits has a negativ one
+		self:ScanTraits()
+		callback:Fire("ARTIFACT_TRAITS_UPDATE", itemID, artifacts[itemID].numTraits, numRanksPurchased, CopyTable(artifacts[itemID].traits))
+	end
+
 	if diff ~= 0 then
 		equipped.unspentPower = unspentPower
 		equipped.power = power
@@ -320,16 +327,7 @@ function frame:ARTIFACT_XP_UPDATE()
 		equipped.numRanksPurchased = numRanksPurchased
 		equipped.numRanksPurchasable = numRanksPurchasable
 		equipped.powerForNextTrait = maxPower - power
-	end
-
-	if diff > 0 then
-		-- artifact power gained
-		callback:Fire("ARTIFACT_XP_UPDATE", unspentPower, power, maxPower, maxPower - power, numRanksPurchasable)
-	elseif diff < 0 then
-		Debug("ARTIFACT_XP_UPDATE", "numRanksPurchased", numRanksPurchased)
-		-- spending power only possible at forge => ArtifactFrame is open
-		self:ScanTraits()
-		callback:Fire("ARTIFACT_TRAITS_UPDATE", itemID, artifacts[itemID].numTraits, numRanksPurchased, CopyTable(artifacts[itemID].traits))
+		callback:Fire("ARTIFACT_XP_UPDATE", diff, unspentPower, power, maxPower, maxPower - power, numRanksPurchasable)
 	end
 end
 
