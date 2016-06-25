@@ -44,6 +44,7 @@ local GetRelicInfo                   = aUI.GetRelicInfo
 local GetRelicSlotType               = aUI.GetRelicSlotType
 local GetSpellInfo                   = _G.GetSpellInfo
 local HasArtifactEquipped            = _G.HasArtifactEquipped
+local IsAtForge                      = aUI.IsAtForge
 local IsViewedArtifactEquipped       = aUI.IsViewedArtifactEquipped
 local SocketContainerItem            = _G.SocketContainerItem
 local SocketInventoryItem            = _G.SocketInventoryItem
@@ -118,7 +119,7 @@ function frame:StoreArtifact(artifactID, name, icon, unspentPower, numRanksPurch
 			traits = traits,
 			relics = relics,
 		}
-		Debug("ARTIFACT_ADDED", artifactID)
+		Debug("ARTIFACT_ADDED", artifactID, name)
 		callback:Fire("ARTIFACT_ADDED", artifactID)
 	else
 		local current = artifacts[artifactID]
@@ -299,27 +300,29 @@ function frame:ARTIFACT_UPDATE(event, newItem)
 end
 
 function frame:ARTIFACT_XP_UPDATE(event)
-	local itemID, _, _, _, unspentPower, numRanksPurchased = GetEquippedArtifactInfo()
+	-- at the forge the player can purchase traits even for unequipped artifacts
+	local GetInfo = IsAtForge() and GetArtifactInfo or GetEquippedArtifactInfo
+	local itemID, _, _, _, unspentPower, numRanksPurchased = GetInfo()
 	local numRanksPurchasable, power, maxPower = GetNumPurchasableTraits(numRanksPurchased, unspentPower)
 
-	local equipped = artifacts[itemID]
-	local diff = unspentPower - equipped.unspentPower
+	local artifact = artifacts[itemID]
+	local diff = unspentPower - artifact.unspentPower
 
-	if numRanksPurchased ~= equipped.numRanksPurchased then
+	if numRanksPurchased ~= artifact.numRanksPurchased then
 		-- both learning traits and artifact respec trigger ARTIFACT_XP_UPDATE
 		-- however respec has a positiv diff and learning traits has a negativ one
-		self:ScanTraits(equippedID)
-		Debug("ARTIFACT_TRAITS_UPDATED", event, itemID, numRanksPurchased)
+		self:ScanTraits(itemID)
+		Debug("ARTIFACT_TRAITS_UPDATED", event, itemID, numRanksPurchased, CopyTable(artifacts[itemID].traits))
 		callback:Fire("ARTIFACT_TRAITS_UPDATED", itemID, numRanksPurchased, CopyTable(artifacts[itemID].traits))
 	end
 
 	if diff ~= 0 then
-		equipped.unspentPower = unspentPower
-		equipped.power = power
-		equipped.maxPower = maxPower
-		equipped.numRanksPurchased = numRanksPurchased
-		equipped.numRanksPurchasable = numRanksPurchasable
-		equipped.powerForNextRank = maxPower - power
+		artifact.unspentPower = unspentPower
+		artifact.power = power
+		artifact.maxPower = maxPower
+		artifact.numRanksPurchased = numRanksPurchased
+		artifact.numRanksPurchasable = numRanksPurchasable
+		artifact.powerForNextRank = maxPower - power
 		Debug(event, itemID, diff, unspentPower, power, maxPower, maxPower - power, numRanksPurchasable)
 		callback:Fire("ARTIFACT_XP_UPDATED", itemID, diff, unspentPower, power, maxPower, maxPower - power, numRanksPurchasable)
 	end
