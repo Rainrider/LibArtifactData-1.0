@@ -52,9 +52,8 @@ local SocketInventoryItem            = _G.SocketInventoryItem
 local strmatch = string.match
 
 local frame = _G.CreateFrame("Frame")
-frame:SetScript("OnEvent", function(self, event, ...) self[event](self, ...) end)
+frame:SetScript("OnEvent", function(self, event, ...) self[event](self, event, ...) end)
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
---frame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 frame:RegisterEvent("ARTIFACT_RESPEC_PROMPT")
 frame:RegisterEvent("ARTIFACT_XP_UPDATE")
 frame:RegisterEvent("ADDON_LOADED")
@@ -119,6 +118,7 @@ function frame:StoreArtifact(artifactID, name, icon, unspentPower, numRanksPurch
 			traits = traits,
 			relics = relics,
 		}
+		Debug("ARTIFACT_ADDED", artifactID)
 		callback:Fire("ARTIFACT_ADDED", artifactID)
 	else
 		local current = artifacts[artifactID]
@@ -192,6 +192,7 @@ function frame:GetArtifactKnowledge()
 	if knowledgeMultiplier ~= mult or knowledgeLevel ~= kLvl then
 		knowledgeLevel = kLvl
 		knowledgeMultiplier = mult
+		Debug("ARTIFACT_KNOWLEDGE_CHANGED", knowledgeLevel, knowledgeMultiplier)
 		callback:Fire("ARTIFACT_KNOWLEDGE_CHANGED", knowledgeLevel, knowledgeMultiplier)
 	end
 end
@@ -264,7 +265,7 @@ function frame:InitializeScan(event)
 	end
 end
 
-function frame:ADDON_LOADED(name)
+function frame:ADDON_LOADED(_, name)
 	if (name ~= MAJOR) then return end
 
 	_G.ladDB = {}
@@ -279,16 +280,16 @@ function frame:ADDON_LOADED(name)
 	self:UnregisterEvent("ADDON_LOADED")
 end
 
-function frame:PLAYER_ENTERING_WORLD()
+function frame:PLAYER_ENTERING_WORLD(event)
 	_G.C_Timer.After(5, function()
-		frame:InitializeScan()
+		frame:InitializeScan(event)
 		frame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 	end)
 end
 
-function frame:ARTIFACT_UPDATE(newItem)
+function frame:ARTIFACT_UPDATE(event, newItem)
 	-- register SPELLS_CHANGED to pick up traits changes
-	Debug("ARTIFACT_UPDATE", newItem)
+	Debug(event, newItem)
 	if newItem then
 		self:GetViewedArtifactData()
 	else
@@ -297,7 +298,7 @@ function frame:ARTIFACT_UPDATE(newItem)
 	end
 end
 
-function frame:ARTIFACT_XP_UPDATE()
+function frame:ARTIFACT_XP_UPDATE(event)
 	local itemID, _, _, _, unspentPower, numRanksPurchased = GetEquippedArtifactInfo()
 	local numRanksPurchasable, power, maxPower = GetNumPurchasableTraits(numRanksPurchased, unspentPower)
 
@@ -308,6 +309,7 @@ function frame:ARTIFACT_XP_UPDATE()
 		-- both learning traits and artifact respec trigger ARTIFACT_XP_UPDATE
 		-- however respec has a positiv diff and learning traits has a negativ one
 		self:ScanTraits(equippedID)
+		Debug("ARTIFACT_TRAITS_UPDATED", event, itemID, numRanksPurchased)
 		callback:Fire("ARTIFACT_TRAITS_UPDATED", itemID, numRanksPurchased, CopyTable(artifacts[itemID].traits))
 	end
 
@@ -318,25 +320,26 @@ function frame:ARTIFACT_XP_UPDATE()
 		equipped.numRanksPurchased = numRanksPurchased
 		equipped.numRanksPurchasable = numRanksPurchasable
 		equipped.powerForNextRank = maxPower - power
+		Debug(event, itemID, diff, unspentPower, power, maxPower, maxPower - power, numRanksPurchasable)
 		callback:Fire("ARTIFACT_XP_UPDATED", itemID, diff, unspentPower, power, maxPower, maxPower - power, numRanksPurchasable)
 	end
 end
 
-function frame:PLAYER_EQUIPMENT_CHANGED(slot)
+function frame:PLAYER_EQUIPMENT_CHANGED(event, slot)
 	if slot == INVSLOT_MAINHAND then
 		local itemID = GetEquippedArtifactInfo()
 
 		if itemID and (GetNumObtainedArtifacts() ~= lib:GetNumObtainedArtifacts() or not artifacts[itemID]) then
 			-- TODO: at this time on cold login GetNumObtainedArtifacts() returns 1 (only the equipped)
-			self:InitializeScan("PLAYER_EQUIPMENT_CHANGED")
+			self:InitializeScan(event)
 		end
 
 		self:InformEquippedArtifactChanged(itemID)
 	end
 end
 
-function frame:ARTIFACT_RESPEC_PROMPT(...)
-	Debug("ARTIFACT_RESPEC_PROMPT", ...)
+function frame:ARTIFACT_RESPEC_PROMPT(event, ...)
+	Debug(event, ...)
 end
 
 function lib:GetArtifactInfo(artifactID)
