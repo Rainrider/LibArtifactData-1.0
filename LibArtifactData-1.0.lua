@@ -326,7 +326,7 @@ function frame:PLAYER_EQUIPMENT_CHANGED(slot)
 	if slot == INVSLOT_MAINHAND then
 		local itemID = GetEquippedArtifactInfo()
 
-		if itemID and GetNumObtainedArtifacts() ~= lib:GetNumObtainedArtifacts() then
+		if itemID and (GetNumObtainedArtifacts() ~= lib:GetNumObtainedArtifacts() or not artifacts[itemID]) then
 			-- TODO: at this time on cold login GetNumObtainedArtifacts() returns 1 (only the equipped)
 			self:InitializeScan("PLAYER_EQUIPMENT_CHANGED")
 		end
