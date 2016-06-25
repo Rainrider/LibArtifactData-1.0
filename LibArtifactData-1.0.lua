@@ -22,6 +22,7 @@ local _G                       = _G
 local BACKPACK_CONTAINER       = _G.BACKPACK_CONTAINER
 local BANK_CONTAINER           = _G.BANK_CONTAINER
 local INVSLOT_MAINHAND         = _G.INVSLOT_MAINHAND
+local LE_ITEM_CLASS_WEAPON     = _G.LE_ITEM_CLASS_WEAPON
 local LE_ITEM_QUALITY_ARTIFACT = _G.LE_ITEM_QUALITY_ARTIFACT
 local NUM_BAG_SLOTS            = _G.NUM_BAG_SLOTS
 local NUM_BANKBAGSLOTS         = _G.NUM_BANKBAGSLOTS
@@ -35,6 +36,7 @@ local GetArtifactKnowledgeMultiplier = aUI.GetArtifactKnowledgeMultiplier
 local GetContainerItemInfo           = _G.GetContainerItemInfo
 local GetContainerNumSlots           = _G.GetContainerNumSlots
 local GetEquippedArtifactInfo        = aUI.GetEquippedArtifactInfo
+local GetItemInfo                    = _G.GetItemInfo
 local GetNumObtainedArtifacts        = aUI.GetNumObtainedArtifacts
 local GetNumPurchasableTraits        = _G.MainMenuBar_GetNumArtifactTraitsPurchasableFromXP
 local GetNumRelicSlots               = aUI.GetNumRelicSlots
@@ -50,6 +52,7 @@ local SocketContainerItem            = _G.SocketContainerItem
 local SocketInventoryItem            = _G.SocketInventoryItem
 
 -- lua api
+local select   = select
 local strmatch = string.match
 
 local frame = _G.CreateFrame("Frame")
@@ -214,13 +217,17 @@ end
 
 function frame:ScanContainer(container, numObtained)
 	for slot = 1, GetContainerNumSlots(container) do
-		local _, _, _, quality = GetContainerItemInfo(container, slot)
+		local _, _, _, quality, _, _, _, _, _, itemID = GetContainerItemInfo(container, slot)
 		if quality == LE_ITEM_QUALITY_ARTIFACT then
-			SocketContainerItem(container, slot)
-			self:GetViewedArtifactData()
-			Clear()
-			numObtained = numObtained - 1
-			if numObtained <= 0 then break end
+			local classID = select(12, GetItemInfo(itemID))
+			if classID == LE_ITEM_CLASS_WEAPON then
+				Debug("ARTIFACT_FOUND", "in", container, slot)
+				SocketContainerItem(container, slot)
+				self:GetViewedArtifactData()
+				Clear()
+				numObtained = numObtained - 1
+				if numObtained <= 0 then break end
+			end
 		end
 	end
 
