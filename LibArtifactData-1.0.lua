@@ -176,7 +176,7 @@ function frame:ScanRelics(artifactID)
 			itemID = strmatch(link, "item:(%d+):")
 		end
 
-		relics[i] = { type = slotType, isLocked = isLocked, name = name, icon = icon, itemID = itemID }
+		relics[i] = { type = slotType, isLocked = isLocked, name = name, icon = icon, itemID = itemID, link = link }
 	end
 
 	if artifactID then
