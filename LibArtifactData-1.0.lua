@@ -243,6 +243,15 @@ function frame:IterateContainers(from, to, numObtained)
 	return numObtained
 end
 
+function frame:ScanBank(numObtained)
+	self:PrepareForScan()
+	numObtained = self:ScanContainer(BANK_CONTAINER, numObtained)
+	if numObtained > 0 then
+		self:IterateContainers(NUM_BAG_SLOTS + 1, NUM_BAG_SLOTS + NUM_BANKBAGSLOTS, numObtained)
+	end
+	self:RestoreStateAfterScan()
+end
+
 function frame:InitializeScan(event)
 	if _G.ArtifactFrame and _G.ArtifactFrame:IsShown() then
 		Debug("InitializeScan", "aborted because ArtifactFrame is open.")
@@ -264,10 +273,9 @@ function frame:InitializeScan(event)
 			numObtained = self:IterateContainers(BACKPACK_CONTAINER, NUM_BAG_SLOTS, numObtained)
 		end
 		if numObtained > 0 then -- scan bank
-			numObtained = self:ScanContainer(BANK_CONTAINER, numObtained)
-			if numObtained > 0 then
-				self:IterateContainers(NUM_BAG_SLOTS + 1, NUM_BAG_SLOTS + NUM_BANKBAGSLOTS, numObtained)
-			end
+			self:RegisterEvent("BANKFRAME_OPENED")
+			Debug("ARTIFACT_DATA_MISSING", numObtained)
+			callback:Fire("ARTIFACT_DATA_MISSING", numObtained)
 		end
 		self:RestoreStateAfterScan()
 	end
@@ -332,6 +340,13 @@ function frame:ARTIFACT_XP_UPDATE(event)
 		artifact.powerForNextRank = maxPower - power
 		Debug(event, itemID, diff, unspentPower, power, maxPower, maxPower - power, numRanksPurchasable)
 		callback:Fire("ARTIFACT_XP_UPDATED", itemID, diff, unspentPower, power, maxPower, maxPower - power, numRanksPurchasable)
+	end
+end
+
+function frame:BANKFRAME_OPENED()
+	local numObtained = lib:GetNumObtainedArtifacts()
+	if numObtained ~= GetNumObtainedArtifacts() then
+		self:ScanBank(numObtained)
 	end
 end
 
