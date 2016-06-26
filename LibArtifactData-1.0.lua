@@ -35,6 +35,7 @@ local GetArtifactKnowledgeLevel      = aUI.GetArtifactKnowledgeLevel
 local GetArtifactKnowledgeMultiplier = aUI.GetArtifactKnowledgeMultiplier
 local GetContainerItemInfo           = _G.GetContainerItemInfo
 local GetContainerNumSlots           = _G.GetContainerNumSlots
+local GetCurrencyInfo                = _G.GetCurrencyInfo
 local GetEquippedArtifactInfo        = aUI.GetEquippedArtifactInfo
 local GetItemInfo                    = _G.GetItemInfo
 local GetNumObtainedArtifacts        = aUI.GetNumObtainedArtifacts
@@ -169,7 +170,6 @@ function frame:ScanTraits(artifactID)
 end
 
 function frame:ScanRelics(artifactID)
-	-- TODO: relics changes don't trigger ARTIFACT_XP_UPDATE; need to rescan traits
 	local relics = {}
 	for i = 1, GetNumRelicSlots() do
 		local slotType = GetRelicSlotType(i)
@@ -191,7 +191,7 @@ function frame:ScanRelics(artifactID)
 end
 
 function frame:GetArtifactKnowledge()
-	local kLvl = GetArtifactKnowledgeLevel() -- TODO: track chages without C_ArtifactUI -- GetCurrencyInfo(1171)
+	local kLvl = GetArtifactKnowledgeLevel()
 	local mult = GetArtifactKnowledgeMultiplier()
 	if knowledgeMultiplier ~= mult or knowledgeLevel ~= kLvl then
 		knowledgeLevel = kLvl
@@ -274,7 +274,7 @@ function frame:InitializeScan(event)
 		end
 		if numObtained > 0 then -- scan bank
 			self:RegisterEvent("BANKFRAME_OPENED")
-			Debug("ARTIFACT_DATA_MISSING", numObtained)
+			Debug("ARTIFACT_DATA_MISSING", "artifact", numObtained)
 			callback:Fire("ARTIFACT_DATA_MISSING", numObtained)
 		end
 		self:RestoreStateAfterScan()
@@ -298,19 +298,18 @@ end
 
 function frame:PLAYER_ENTERING_WORLD(event)
 	_G.C_Timer.After(5, function()
-		frame:InitializeScan(event)
-		frame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
+		self:InitializeScan(event)
+		self:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
+		self:RegisterEvent("CURRENCY_DISPLAY_UPDATE")
 	end)
 end
 
 function frame:ARTIFACT_UPDATE(event, newItem)
-	-- register SPELLS_CHANGED to pick up traits changes
 	Debug(event, newItem)
 	if newItem then
 		self:GetViewedArtifactData()
 	else
-		-- traits or relics updated?
-		-- can only change traits and perks for equipped?
+		-- TODO: relics update
 	end
 end
 
@@ -325,7 +324,7 @@ function frame:ARTIFACT_XP_UPDATE(event)
 
 	if numRanksPurchased ~= artifact.numRanksPurchased then
 		-- both learning traits and artifact respec trigger ARTIFACT_XP_UPDATE
-		-- however respec has a positiv diff and learning traits has a negativ one
+		-- however respec has a positive diff and learning traits has a negative one
 		self:ScanTraits(itemID)
 		Debug("ARTIFACT_TRAITS_UPDATED", event, itemID, numRanksPurchased, CopyTable(artifacts[itemID].traits))
 		callback:Fire("ARTIFACT_TRAITS_UPDATED", itemID, numRanksPurchased, CopyTable(artifacts[itemID].traits))
@@ -350,12 +349,20 @@ function frame:BANKFRAME_OPENED()
 	end
 end
 
+function frame:CURRENCY_DISPLAY_UPDATE(event)
+	local _, kLvl = GetCurrencyInfo(1171)
+	if kLvl ~= knowledgeLevel then
+		knowledgeLevel = kLvl
+		Debug("ARTIFACT_DATA_MISSING", event, kLvl)
+		callback:Fire("ARTIFACT_DATA_MISSING", "knowledge", kLvl)
+	end
+end
+
 function frame:PLAYER_EQUIPMENT_CHANGED(event, slot)
 	if slot == INVSLOT_MAINHAND then
 		local itemID = GetEquippedArtifactInfo()
 
 		if itemID and not artifacts[itemID] then
-			-- TODO: at this time on cold login GetNumObtainedArtifacts() returns 1 (only the equipped)
 			self:InitializeScan(event)
 		end
 
