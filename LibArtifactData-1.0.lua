@@ -14,8 +14,8 @@ end
 -- local store
 local artifacts = {}
 local equippedID
-local knowledgeLevel = 0
-local knowledgeMultiplier = 1
+artifacts.knowledgeLevel = 0
+artifacts.knowledgeMultiplier = 1
 
 -- constants
 local _G                       = _G
@@ -191,13 +191,13 @@ function frame:ScanRelics(artifactID)
 end
 
 function frame:GetArtifactKnowledge()
-	local kLvl = GetArtifactKnowledgeLevel()
+	local lvl = GetArtifactKnowledgeLevel()
 	local mult = GetArtifactKnowledgeMultiplier()
-	if knowledgeMultiplier ~= mult or knowledgeLevel ~= kLvl then
-		knowledgeLevel = kLvl
-		knowledgeMultiplier = mult
-		Debug("ARTIFACT_KNOWLEDGE_CHANGED", knowledgeLevel, knowledgeMultiplier)
-		callback:Fire("ARTIFACT_KNOWLEDGE_CHANGED", knowledgeLevel, knowledgeMultiplier)
+	if artifacts.knowledgeMultiplier ~= mult or artifacts.knowledgeLevel ~= lvl then
+		artifacts.knowledgeLevel = lvl
+		artifacts.knowledgeMultiplier = mult
+		Debug("ARTIFACT_KNOWLEDGE_CHANGED", lvl, mult)
+		callback:Fire("ARTIFACT_KNOWLEDGE_CHANGED", lvl, mult)
 	end
 end
 
@@ -350,11 +350,11 @@ function frame:BANKFRAME_OPENED()
 end
 
 function frame:CURRENCY_DISPLAY_UPDATE(event)
-	local _, kLvl = GetCurrencyInfo(1171)
-	if kLvl ~= knowledgeLevel then
-		knowledgeLevel = kLvl
-		Debug("ARTIFACT_DATA_MISSING", event, kLvl)
-		callback:Fire("ARTIFACT_DATA_MISSING", "knowledge", kLvl)
+	local _, lvl = GetCurrencyInfo(1171)
+	if lvl ~= artifacts.knowledgeLevel then
+		artifacts.knowledgeLevel = lvl
+		Debug("ARTIFACT_DATA_MISSING", event, lvl)
+		callback:Fire("ARTIFACT_DATA_MISSING", "knowledge", lvl)
 	end
 end
 
@@ -420,7 +420,7 @@ function lib:GetArtifactPower(artifactID)
 end
 
 function lib:GetArtifactKnowledge()
-	return knowledgeLevel, knowledgeMultiplier
+	return artifacts.knowledgeLevel, artifacts.knowledgeMultiplier
 end
 
 function lib:ForceUpdate()
