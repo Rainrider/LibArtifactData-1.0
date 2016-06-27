@@ -13,7 +13,7 @@ end
 
 -- local store
 local artifacts = {}
-local equippedID
+local equippedID, viewedID
 artifacts.knowledgeLevel = 0
 artifacts.knowledgeMultiplier = 1
 
@@ -59,6 +59,7 @@ local strmatch = string.match
 local frame = _G.CreateFrame("Frame")
 frame:SetScript("OnEvent", function(self, event, ...) self[event](self, event, ...) end)
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+frame:RegisterEvent("ARTIFACT_CLOSE")
 frame:RegisterEvent("ARTIFACT_RESPEC_PROMPT")
 frame:RegisterEvent("ARTIFACT_XP_UPDATE")
 frame:RegisterEvent("ADDON_LOADED")
@@ -204,6 +205,7 @@ end
 function frame:GetViewedArtifactData()
 	self:GetArtifactKnowledge()
 	local itemID, _, name, icon, unspentPower, numRanksPurchased = GetArtifactInfo() -- TODO: appearance stuff needed? altItemID ?
+	viewedID = itemID
 	Debug("GetViewedArtifactData", name, itemID)
 	local numRanksPurchasable, power, maxPower = GetNumPurchasableTraits(numRanksPurchased, unspentPower)
 	local traits = self:ScanTraits()
@@ -304,12 +306,28 @@ function frame:PLAYER_ENTERING_WORLD(event)
 	end)
 end
 
+function frame:ARTIFACT_CLOSE()
+	viewedID = nil
+end
+
 function frame:ARTIFACT_UPDATE(event, newItem)
 	Debug(event, newItem)
 	if newItem then
 		self:GetViewedArtifactData()
 	else
-		-- TODO: relics update
+		local newRelics = self:ScanRelics()
+		local oldRelics = artifacts[viewedID].relics
+
+		for i = 1, #newRelics do
+			local newRelic = newRelics[i]
+			-- TODO: test third slot unlock
+			if newRelic.isLocked ~= oldRelics[i].isLocked or newRelic.itemID ~= oldRelics[i].itemID then
+				oldRelics[i] = newRelic
+				Debug("ARTIFACT_RELIC_CHANGED", i, newRelic)
+				callback:Fire("ARTIFACT_RELIC_CHANGED", i, CopyTable(newRelic))
+				break
+			end
+		end
 	end
 end
 
