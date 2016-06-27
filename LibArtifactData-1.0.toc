@@ -4,6 +4,7 @@
 ## Author: Rainrider
 ## X-Category: Library
 ## Version: 1.0
+## LoadOnDemand: 1
 ## OptionalDeps: AdiDebug
 
 LibStub\LibStub.lua
