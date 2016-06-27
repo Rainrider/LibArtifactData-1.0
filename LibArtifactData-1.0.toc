@@ -4,7 +4,6 @@
 ## Author: Rainrider
 ## X-Category: Library
 ## Version: 1.0
-## SavedVariables: ladDB
 ## OptionalDeps: AdiDebug
 
 LibStub\LibStub.lua

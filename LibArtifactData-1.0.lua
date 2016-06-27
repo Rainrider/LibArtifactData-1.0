@@ -60,9 +60,7 @@ local frame = _G.CreateFrame("Frame")
 frame:SetScript("OnEvent", function(self, event, ...) self[event](self, event, ...) end)
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 frame:RegisterEvent("ARTIFACT_CLOSE")
-frame:RegisterEvent("ARTIFACT_RESPEC_PROMPT")
 frame:RegisterEvent("ARTIFACT_XP_UPDATE")
-frame:RegisterEvent("ADDON_LOADED")
 
 local function CopyTable(tbl)
 	if not tbl then return {} end
@@ -283,21 +281,6 @@ function frame:InitializeScan(event)
 	end
 end
 
-function frame:ADDON_LOADED(_, name)
-	if (name ~= MAJOR) then return end
-
-	_G.ladDB = {}
-	local db = _G.ladDB
-
-	for funcName in pairs(aUI) do
-		db[#db + 1] = funcName
-	end
-
-	table.sort(db)
-
-	self:UnregisterEvent("ADDON_LOADED")
-end
-
 function frame:PLAYER_ENTERING_WORLD(event)
 	_G.C_Timer.After(5, function()
 		self:InitializeScan(event)
@@ -386,10 +369,6 @@ function frame:PLAYER_EQUIPMENT_CHANGED(event, slot)
 
 		self:InformEquippedArtifactChanged(itemID)
 	end
-end
-
-function frame:ARTIFACT_RESPEC_PROMPT(event, ...)
-	Debug(event, ...)
 end
 
 function lib:GetArtifactInfo(artifactID)
