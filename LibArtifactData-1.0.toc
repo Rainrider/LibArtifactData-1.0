@@ -7,4 +7,7 @@
 ## SavedVariables: ladDB
 ## OptionalDeps: AdiDebug
 
+LibStub.lua
+CallbackHandler-1.0.lua
+
 LibArtifactData-1.0.lua
