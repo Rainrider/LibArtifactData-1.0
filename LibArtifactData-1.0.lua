@@ -1,10 +1,10 @@
-local MAJOR, MINOR = "LibArtifactData-1.0", 1
+local MAJOR, MINOR = "LibArtifactData-1.0", 2
 
 assert(_G.LibStub, MAJOR .. " requires LibStub")
 local lib = _G.LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
-local callback = _G.LibStub("CallbackHandler-1.0"):New(lib)
+lib.callbacks = lib.callbacks or _G.LibStub("CallbackHandler-1.0"):New(lib)
 
 local Debug = function() end
 if _G.AdiDebug then
@@ -103,7 +103,7 @@ end
 function frame:InformEquippedArtifactChanged(artifactID)
 	if artifactID ~= equippedID then
 		Debug("ARTIFACT_EQUIPPED_CHANGED", equippedID, artifactID)
-		callback:Fire("ARTIFACT_EQUIPPED_CHANGED", equippedID, artifactID)
+		lib.callbacks:Fire("ARTIFACT_EQUIPPED_CHANGED", equippedID, artifactID)
 		equippedID = artifactID
 	end
 end
@@ -123,7 +123,7 @@ function frame:StoreArtifact(artifactID, name, icon, unspentPower, numRanksPurch
 			relics = relics,
 		}
 		Debug("ARTIFACT_ADDED", artifactID, name)
-		callback:Fire("ARTIFACT_ADDED", artifactID)
+		lib.callbacks:Fire("ARTIFACT_ADDED", artifactID)
 	else
 		local current = artifacts[artifactID]
 		current.unspentPower = unspentPower
@@ -196,7 +196,7 @@ function frame:GetArtifactKnowledge()
 		artifacts.knowledgeLevel = lvl
 		artifacts.knowledgeMultiplier = mult
 		Debug("ARTIFACT_KNOWLEDGE_CHANGED", lvl, mult)
-		callback:Fire("ARTIFACT_KNOWLEDGE_CHANGED", lvl, mult)
+		lib.callbacks:Fire("ARTIFACT_KNOWLEDGE_CHANGED", lvl, mult)
 	end
 end
 
@@ -275,7 +275,7 @@ function frame:InitializeScan(event)
 		if numObtained > 0 then -- scan bank
 			self:RegisterEvent("BANKFRAME_OPENED")
 			Debug("ARTIFACT_DATA_MISSING", "artifact", numObtained)
-			callback:Fire("ARTIFACT_DATA_MISSING", numObtained)
+			lib.callbacks:Fire("ARTIFACT_DATA_MISSING", numObtained)
 		end
 		self:RestoreStateAfterScan()
 	end
@@ -307,7 +307,7 @@ function frame:ARTIFACT_UPDATE(event, newItem)
 			if newRelic.isLocked ~= oldRelics[i].isLocked or newRelic.itemID ~= oldRelics[i].itemID then
 				oldRelics[i] = newRelic
 				Debug("ARTIFACT_RELIC_CHANGED", i, newRelic)
-				callback:Fire("ARTIFACT_RELIC_CHANGED", i, CopyTable(newRelic))
+				lib.callbacks:Fire("ARTIFACT_RELIC_CHANGED", i, CopyTable(newRelic))
 				break
 			end
 		end
@@ -328,7 +328,7 @@ function frame:ARTIFACT_XP_UPDATE(event)
 		-- however respec has a positive diff and learning traits has a negative one
 		self:ScanTraits(itemID)
 		Debug("ARTIFACT_TRAITS_UPDATED", event, itemID, numRanksPurchased, CopyTable(artifacts[itemID].traits))
-		callback:Fire("ARTIFACT_TRAITS_UPDATED", itemID, numRanksPurchased, CopyTable(artifacts[itemID].traits))
+		lib.callbacks:Fire("ARTIFACT_TRAITS_UPDATED", itemID, numRanksPurchased, CopyTable(artifacts[itemID].traits))
 	end
 
 	if diff ~= 0 then
@@ -339,7 +339,7 @@ function frame:ARTIFACT_XP_UPDATE(event)
 		artifact.numRanksPurchasable = numRanksPurchasable
 		artifact.powerForNextRank = maxPower - power
 		Debug(event, itemID, diff, unspentPower, power, maxPower, maxPower - power, numRanksPurchasable)
-		callback:Fire("ARTIFACT_XP_UPDATED", itemID, diff, unspentPower, power, maxPower, maxPower - power, numRanksPurchasable)
+		lib.callbacks:Fire("ARTIFACT_XP_UPDATED", itemID, diff, unspentPower, power, maxPower, maxPower - power, numRanksPurchasable)
 	end
 end
 
@@ -355,7 +355,7 @@ function frame:CURRENCY_DISPLAY_UPDATE(event)
 	if lvl ~= artifacts.knowledgeLevel then
 		artifacts.knowledgeLevel = lvl
 		Debug("ARTIFACT_DATA_MISSING", event, lvl)
-		callback:Fire("ARTIFACT_DATA_MISSING", "knowledge", lvl)
+		lib.callbacks:Fire("ARTIFACT_DATA_MISSING", "knowledge", lvl)
 	end
 end
 
