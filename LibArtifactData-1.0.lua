@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "LibArtifactData-1.0", 2
+local MAJOR, MINOR = "LibArtifactData-1.0", 3
 
 assert(_G.LibStub, MAJOR .. " requires LibStub")
 local lib = _G.LibStub:NewLibrary(MAJOR, MINOR)
@@ -13,7 +13,7 @@ end
 
 -- local store
 local artifacts = {}
-local equippedID, viewedID
+local equippedID, viewedID, activeID
 artifacts.knowledgeLevel = 0
 artifacts.knowledgeMultiplier = 1
 
@@ -28,29 +28,30 @@ local NUM_BAG_SLOTS            = _G.NUM_BAG_SLOTS
 local NUM_BANKBAGSLOTS         = _G.NUM_BANKBAGSLOTS
 
 -- blizzard api
-local aUI                            = _G.C_ArtifactUI
-local Clear                          = aUI.Clear
-local GetArtifactInfo                = aUI.GetArtifactInfo
-local GetArtifactKnowledgeLevel      = aUI.GetArtifactKnowledgeLevel
-local GetArtifactKnowledgeMultiplier = aUI.GetArtifactKnowledgeMultiplier
-local GetContainerItemInfo           = _G.GetContainerItemInfo
-local GetContainerNumSlots           = _G.GetContainerNumSlots
-local GetCurrencyInfo                = _G.GetCurrencyInfo
-local GetEquippedArtifactInfo        = aUI.GetEquippedArtifactInfo
-local GetItemInfo                    = _G.GetItemInfo
-local GetNumObtainedArtifacts        = aUI.GetNumObtainedArtifacts
-local GetNumPurchasableTraits        = _G.MainMenuBar_GetNumArtifactTraitsPurchasableFromXP
-local GetNumRelicSlots               = aUI.GetNumRelicSlots
-local GetPowerInfo                   = aUI.GetPowerInfo
-local GetPowers                      = aUI.GetPowers
-local GetRelicInfo                   = aUI.GetRelicInfo
-local GetRelicSlotType               = aUI.GetRelicSlotType
-local GetSpellInfo                   = _G.GetSpellInfo
-local HasArtifactEquipped            = _G.HasArtifactEquipped
-local IsAtForge                      = aUI.IsAtForge
-local IsViewedArtifactEquipped       = aUI.IsViewedArtifactEquipped
-local SocketContainerItem            = _G.SocketContainerItem
-local SocketInventoryItem            = _G.SocketInventoryItem
+local aUI                              = _G.C_ArtifactUI
+local Clear                            = aUI.Clear
+local GetArtifactInfo                  = aUI.GetArtifactInfo
+local GetArtifactKnowledgeLevel        = aUI.GetArtifactKnowledgeLevel
+local GetArtifactKnowledgeMultiplier   = aUI.GetArtifactKnowledgeMultiplier
+local GetContainerItemInfo             = _G.GetContainerItemInfo
+local GetContainerNumSlots             = _G.GetContainerNumSlots
+local GetCurrencyInfo                  = _G.GetCurrencyInfo
+local GetEquippedArtifactInfo          = aUI.GetEquippedArtifactInfo
+local GetInventoryItemEquippedUnusable = _G.GetInventoryItemEquippedUnusable
+local GetItemInfo                      = _G.GetItemInfo
+local GetNumObtainedArtifacts          = aUI.GetNumObtainedArtifacts
+local GetNumPurchasableTraits          = _G.MainMenuBar_GetNumArtifactTraitsPurchasableFromXP
+local GetNumRelicSlots                 = aUI.GetNumRelicSlots
+local GetPowerInfo                     = aUI.GetPowerInfo
+local GetPowers                        = aUI.GetPowers
+local GetRelicInfo                     = aUI.GetRelicInfo
+local GetRelicSlotType                 = aUI.GetRelicSlotType
+local GetSpellInfo                     = _G.GetSpellInfo
+local HasArtifactEquipped              = _G.HasArtifactEquipped
+local IsAtForge                        = aUI.IsAtForge
+local IsViewedArtifactEquipped         = aUI.IsViewedArtifactEquipped
+local SocketContainerItem              = _G.SocketContainerItem
+local SocketInventoryItem              = _G.SocketInventoryItem
 
 -- lua api
 local select   = select
@@ -61,6 +62,7 @@ frame:SetScript("OnEvent", function(self, event, ...) self[event](self, event, .
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 frame:RegisterEvent("ARTIFACT_CLOSE")
 frame:RegisterEvent("ARTIFACT_XP_UPDATE")
+frame:RegisterUnitEvent("PLAYER_SPECIALIZATION_CHANGED", "player")
 
 local function CopyTable(tbl)
 	if not tbl then return {} end
@@ -105,6 +107,19 @@ function frame:InformEquippedArtifactChanged(artifactID)
 		Debug("ARTIFACT_EQUIPPED_CHANGED", equippedID, artifactID)
 		lib.callbacks:Fire("ARTIFACT_EQUIPPED_CHANGED", equippedID, artifactID)
 		equippedID = artifactID
+	end
+end
+
+function frame:InformActiveArtifactChanged(artifactID)
+	local oldActiveID = activeID
+	if artifactID and not GetInventoryItemEquippedUnusable("player", INVSLOT_MAINHAND) then
+		activeID = artifactID
+	else
+		activeID = nil
+	end
+	if oldActiveID ~= activeID then
+		Debug("ARTIFACT_ACTIVE_CHANGED", oldActiveID, activeID)
+		lib.callbacks:Fire("ARTIFACT_ACTIVE_CHANGED", oldActiveID, activeID)
 	end
 end
 
@@ -212,6 +227,7 @@ function frame:GetViewedArtifactData()
 
 	if IsViewedArtifactEquipped() then
 		self:InformEquippedArtifactChanged(itemID)
+		self:InformActiveArtifactChanged(itemID)
 	end
 end
 
@@ -368,7 +384,19 @@ function frame:PLAYER_EQUIPMENT_CHANGED(event, slot)
 		end
 
 		self:InformEquippedArtifactChanged(itemID)
+		self:InformActiveArtifactChanged(itemID)
 	end
+end
+
+-- needed in case the game fails to switch artifacts
+function frame:PLAYER_SPECIALIZATION_CHANGED(event)
+	local itemID = GetEquippedArtifactInfo()
+	Debug(event, itemID)
+	self:InformActiveArtifactChanged(itemID)
+end
+
+function lib:GetActiveArtifactID()
+	return activeID
 end
 
 function lib:GetArtifactInfo(artifactID)
