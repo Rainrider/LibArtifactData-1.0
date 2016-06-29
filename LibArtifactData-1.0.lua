@@ -326,8 +326,8 @@ function private.ARTIFACT_UPDATE(event, newItem)
 			-- TODO: test third slot unlock
 			if newRelic.isLocked ~= oldRelics[i].isLocked or newRelic.itemID ~= oldRelics[i].itemID then
 				oldRelics[i] = newRelic
-				Debug("ARTIFACT_RELIC_CHANGED", i, newRelic)
-				lib.callbacks:Fire("ARTIFACT_RELIC_CHANGED", i, CopyTable(newRelic))
+				Debug("ARTIFACT_RELIC_CHANGED", viewedID, i, newRelic)
+				lib.callbacks:Fire("ARTIFACT_RELIC_CHANGED", viewedID, i, CopyTable(newRelic))
 				break
 			end
 		end
