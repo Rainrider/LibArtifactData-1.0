@@ -57,8 +57,12 @@ local SocketInventoryItem              = _G.SocketInventoryItem
 local select   = select
 local strmatch = string.match
 
-local frame = _G.CreateFrame("Frame")
-frame:SetScript("OnEvent", function(self, event, ...) self[event](self, event, ...) end)
+local private = {} -- private space for the event handlers
+
+lib.frame = lib.frame or _G.CreateFrame("Frame")
+local frame = lib.frame
+frame:UnregisterAllEvents() -- deactivate old versions
+frame:SetScript("OnEvent", function(_, event, ...) private[event](event, ...) end)
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 frame:RegisterEvent("ARTIFACT_CLOSE")
 frame:RegisterEvent("ARTIFACT_XP_UPDATE")
@@ -297,19 +301,19 @@ local function InitializeScan(event)
 	end
 end
 
-function frame:PLAYER_ENTERING_WORLD(event)
+function private.PLAYER_ENTERING_WORLD(event)
 	_G.C_Timer.After(5, function()
 		InitializeScan(event)
-		self:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
-		self:RegisterEvent("CURRENCY_DISPLAY_UPDATE")
+		frame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
+		frame:RegisterEvent("CURRENCY_DISPLAY_UPDATE")
 	end)
 end
 
-function frame:ARTIFACT_CLOSE()
+function private.ARTIFACT_CLOSE()
 	viewedID = nil
 end
 
-function frame:ARTIFACT_UPDATE(event, newItem)
+function private.ARTIFACT_UPDATE(event, newItem)
 	Debug(event, newItem)
 	if newItem then
 		GetViewedArtifactData()
@@ -330,7 +334,7 @@ function frame:ARTIFACT_UPDATE(event, newItem)
 	end
 end
 
-function frame:ARTIFACT_XP_UPDATE(event)
+function private.ARTIFACT_XP_UPDATE(event)
 	-- at the forge the player can purchase traits even for unequipped artifacts
 	local GetInfo = IsAtForge() and GetArtifactInfo or GetEquippedArtifactInfo
 	local itemID, _, _, _, unspentPower, numRanksPurchased = GetInfo()
@@ -359,14 +363,14 @@ function frame:ARTIFACT_XP_UPDATE(event)
 	end
 end
 
-function frame:BANKFRAME_OPENED()
+function private.BANKFRAME_OPENED()
 	local numObtained = lib:GetNumObtainedArtifacts()
 	if numObtained ~= GetNumObtainedArtifacts() then
 		ScanBank(numObtained)
 	end
 end
 
-function frame:CURRENCY_DISPLAY_UPDATE(event)
+function private.CURRENCY_DISPLAY_UPDATE(event)
 	local _, lvl = GetCurrencyInfo(1171)
 	if lvl ~= artifacts.knowledgeLevel then
 		artifacts.knowledgeLevel = lvl
@@ -375,7 +379,7 @@ function frame:CURRENCY_DISPLAY_UPDATE(event)
 	end
 end
 
-function frame:PLAYER_EQUIPMENT_CHANGED(event, slot)
+function private.PLAYER_EQUIPMENT_CHANGED(event, slot)
 	if slot == INVSLOT_MAINHAND then
 		local itemID = GetEquippedArtifactInfo()
 
@@ -389,7 +393,7 @@ function frame:PLAYER_EQUIPMENT_CHANGED(event, slot)
 end
 
 -- needed in case the game fails to switch artifacts
-function frame:PLAYER_SPECIALIZATION_CHANGED(event)
+function private.PLAYER_SPECIALIZATION_CHANGED(event)
 	local itemID = GetEquippedArtifactInfo()
 	Debug(event, itemID)
 	InformActiveArtifactChanged(itemID)
