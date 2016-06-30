@@ -54,8 +54,9 @@ local SocketContainerItem              = _G.SocketContainerItem
 local SocketInventoryItem              = _G.SocketInventoryItem
 
 -- lua api
-local select   = select
-local strmatch = string.match
+local select   = _G.select
+local strmatch = _G.string.match
+local tonumber = _G.tonumber
 
 local private = {} -- private space for the event handlers
 
@@ -422,7 +423,9 @@ end
 function lib:GetNumObtainedArtifacts()
 	local numArtifacts = 0
 	for artifact in pairs(artifacts) do
-		numArtifacts = numArtifacts + 1
+		if tonumber(artifact) then
+			numArtifacts = numArtifacts + 1
+		end
 	end
 
 	return numArtifacts
