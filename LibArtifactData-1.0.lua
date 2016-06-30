@@ -77,7 +77,7 @@ local function CopyTable(tbl)
 	return copy;
 end
 
-function frame:PrepareForScan()
+local function PrepareForScan()
 	self:UnregisterEvent("ARTIFACT_UPDATE")
 	local ArtifactFrame = _G.ArtifactFrame
 
@@ -89,7 +89,7 @@ function frame:PrepareForScan()
 	end
 end
 
-function frame:RestoreStateAfterScan()
+local function RestoreStateAfterScan()
 	self:RegisterEvent("ARTIFACT_UPDATE")
 	local ArtifactFrame = _G.ArtifactFrame
 
@@ -102,7 +102,7 @@ function frame:RestoreStateAfterScan()
 	end
 end
 
-function frame:InformEquippedArtifactChanged(artifactID)
+local function InformEquippedArtifactChanged(artifactID)
 	if artifactID ~= equippedID then
 		Debug("ARTIFACT_EQUIPPED_CHANGED", equippedID, artifactID)
 		lib.callbacks:Fire("ARTIFACT_EQUIPPED_CHANGED", equippedID, artifactID)
@@ -110,7 +110,7 @@ function frame:InformEquippedArtifactChanged(artifactID)
 	end
 end
 
-function frame:InformActiveArtifactChanged(artifactID)
+local function InformActiveArtifactChanged(artifactID)
 	local oldActiveID = activeID
 	if artifactID and not GetInventoryItemEquippedUnusable("player", INVSLOT_MAINHAND) then
 		activeID = artifactID
@@ -123,7 +123,7 @@ function frame:InformActiveArtifactChanged(artifactID)
 	end
 end
 
-function frame:StoreArtifact(artifactID, name, icon, unspentPower, numRanksPurchased, numRanksPurchasable, power, maxPower, traits, relics)
+local function StoreArtifact(artifactID, name, icon, unspentPower, numRanksPurchased, numRanksPurchasable, power, maxPower, traits, relics)
 	if not artifacts[artifactID] then
 		artifacts[artifactID] = {
 			name = name,
@@ -152,7 +152,7 @@ function frame:StoreArtifact(artifactID, name, icon, unspentPower, numRanksPurch
 	end
 end
 
-function frame:ScanTraits(artifactID)
+local function ScanTraits(artifactID)
 	local traits = {}
 	local powers = GetPowers()
 
@@ -183,7 +183,7 @@ function frame:ScanTraits(artifactID)
 	return traits
 end
 
-function frame:ScanRelics(artifactID)
+local function ScanRelics(artifactID)
 	local relics = {}
 	for i = 1, GetNumRelicSlots() do
 		local slotType = GetRelicSlotType(i)
@@ -204,7 +204,7 @@ function frame:ScanRelics(artifactID)
 	return relics
 end
 
-function frame:GetArtifactKnowledge()
+local function GetArtifactKnowledge()
 	local lvl = GetArtifactKnowledgeLevel()
 	local mult = GetArtifactKnowledgeMultiplier()
 	if artifacts.knowledgeMultiplier ~= mult or artifacts.knowledgeLevel ~= lvl then
@@ -215,23 +215,23 @@ function frame:GetArtifactKnowledge()
 	end
 end
 
-function frame:GetViewedArtifactData()
-	self:GetArtifactKnowledge()
+local function GetViewedArtifactData()
+	GetArtifactKnowledge()
 	local itemID, _, name, icon, unspentPower, numRanksPurchased = GetArtifactInfo() -- TODO: appearance stuff needed? altItemID ?
 	viewedID = itemID
 	Debug("GetViewedArtifactData", name, itemID)
 	local numRanksPurchasable, power, maxPower = GetNumPurchasableTraits(numRanksPurchased, unspentPower)
-	local traits = self:ScanTraits()
-	local relics = self:ScanRelics()
-	self:StoreArtifact(itemID, name, icon, unspentPower, numRanksPurchased, numRanksPurchasable, power, maxPower, traits, relics)
+	local traits = ScanTraits()
+	local relics = ScanRelics()
+	StoreArtifact(itemID, name, icon, unspentPower, numRanksPurchased, numRanksPurchasable, power, maxPower, traits, relics)
 
 	if IsViewedArtifactEquipped() then
-		self:InformEquippedArtifactChanged(itemID)
-		self:InformActiveArtifactChanged(itemID)
+		InformEquippedArtifactChanged(itemID)
+		InformActiveArtifactChanged(itemID)
 	end
 end
 
-function frame:ScanContainer(container, numObtained)
+local function ScanContainer(container, numObtained)
 	for slot = 1, GetContainerNumSlots(container) do
 		local _, _, _, quality, _, _, _, _, _, itemID = GetContainerItemInfo(container, slot)
 		if quality == LE_ITEM_QUALITY_ARTIFACT then
@@ -239,7 +239,7 @@ function frame:ScanContainer(container, numObtained)
 			if classID == LE_ITEM_CLASS_WEAPON then
 				Debug("ARTIFACT_FOUND", "in", container, slot)
 				SocketContainerItem(container, slot)
-				self:GetViewedArtifactData()
+				GetViewedArtifactData()
 				Clear()
 				numObtained = numObtained - 1
 				if numObtained <= 0 then break end
@@ -250,25 +250,25 @@ function frame:ScanContainer(container, numObtained)
 	return numObtained
 end
 
-function frame:IterateContainers(from, to, numObtained)
+local function IterateContainers(from, to, numObtained)
 	for container = from, to do
-		numObtained = self:ScanContainer(container, numObtained)
+		numObtained = ScanContainer(container, numObtained)
 		if numObtained <= 0 then break end
 	end
 
 	return numObtained
 end
 
-function frame:ScanBank(numObtained)
-	self:PrepareForScan()
+local function ScanBank(numObtained)
+	PrepareForScan()
 	numObtained = self:ScanContainer(BANK_CONTAINER, numObtained)
 	if numObtained > 0 then
-		self:IterateContainers(NUM_BAG_SLOTS + 1, NUM_BAG_SLOTS + NUM_BANKBAGSLOTS, numObtained)
+		IterateContainers(NUM_BAG_SLOTS + 1, NUM_BAG_SLOTS + NUM_BANKBAGSLOTS, numObtained)
 	end
-	self:RestoreStateAfterScan()
+	RestoreStateAfterScan()
 end
 
-function frame:InitializeScan(event)
+local function InitializeScan(event)
 	if _G.ArtifactFrame and _G.ArtifactFrame:IsShown() then
 		Debug("InitializeScan", "aborted because ArtifactFrame is open.")
 		return
@@ -278,28 +278,28 @@ function frame:InitializeScan(event)
 	Debug("InitializeScan", event, "numObtained", numObtained)
 
 	if numObtained > 0 then
-		self:PrepareForScan()
+		PrepareForScan()
 		if HasArtifactEquipped() then -- scan equipped
 			SocketInventoryItem(INVSLOT_MAINHAND)
-			self:GetViewedArtifactData()
+			GetViewedArtifactData()
 			Clear()
 			numObtained = numObtained - 1
 		end
 		if numObtained > 0 then -- scan bags
-			numObtained = self:IterateContainers(BACKPACK_CONTAINER, NUM_BAG_SLOTS, numObtained)
+			numObtained = IterateContainers(BACKPACK_CONTAINER, NUM_BAG_SLOTS, numObtained)
 		end
 		if numObtained > 0 then -- scan bank
-			self:RegisterEvent("BANKFRAME_OPENED")
+			frame:RegisterEvent("BANKFRAME_OPENED")
 			Debug("ARTIFACT_DATA_MISSING", "artifact", numObtained)
 			lib.callbacks:Fire("ARTIFACT_DATA_MISSING", numObtained)
 		end
-		self:RestoreStateAfterScan()
+		RestoreStateAfterScan()
 	end
 end
 
 function frame:PLAYER_ENTERING_WORLD(event)
 	_G.C_Timer.After(5, function()
-		self:InitializeScan(event)
+		InitializeScan(event)
 		self:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 		self:RegisterEvent("CURRENCY_DISPLAY_UPDATE")
 	end)
@@ -312,9 +312,9 @@ end
 function frame:ARTIFACT_UPDATE(event, newItem)
 	Debug(event, newItem)
 	if newItem then
-		self:GetViewedArtifactData()
+		GetViewedArtifactData()
 	else
-		local newRelics = self:ScanRelics()
+		local newRelics = ScanRelics()
 		local oldRelics = artifacts[viewedID].relics
 
 		for i = 1, #newRelics do
@@ -342,8 +342,8 @@ function frame:ARTIFACT_XP_UPDATE(event)
 	if numRanksPurchased ~= artifact.numRanksPurchased then
 		-- both learning traits and artifact respec trigger ARTIFACT_XP_UPDATE
 		-- however respec has a positive diff and learning traits has a negative one
-		self:ScanTraits(itemID)
-		Debug("ARTIFACT_TRAITS_UPDATED", event, itemID, numRanksPurchased, CopyTable(artifacts[itemID].traits))
+		ScanTraits(itemID)
+		Debug("ARTIFACT_TRAITS_UPDATED", event, itemID, numRanksPurchased, artifacts[itemID].traits)
 		lib.callbacks:Fire("ARTIFACT_TRAITS_UPDATED", itemID, numRanksPurchased, CopyTable(artifacts[itemID].traits))
 	end
 
@@ -362,7 +362,7 @@ end
 function frame:BANKFRAME_OPENED()
 	local numObtained = lib:GetNumObtainedArtifacts()
 	if numObtained ~= GetNumObtainedArtifacts() then
-		self:ScanBank(numObtained)
+		ScanBank(numObtained)
 	end
 end
 
@@ -380,11 +380,11 @@ function frame:PLAYER_EQUIPMENT_CHANGED(event, slot)
 		local itemID = GetEquippedArtifactInfo()
 
 		if itemID and not artifacts[itemID] then
-			self:InitializeScan(event)
+			InitializeScan(event)
 		end
 
-		self:InformEquippedArtifactChanged(itemID)
-		self:InformActiveArtifactChanged(itemID)
+		InformEquippedArtifactChanged(itemID)
+		InformActiveArtifactChanged(itemID)
 	end
 end
 
@@ -392,7 +392,7 @@ end
 function frame:PLAYER_SPECIALIZATION_CHANGED(event)
 	local itemID = GetEquippedArtifactInfo()
 	Debug(event, itemID)
-	self:InformActiveArtifactChanged(itemID)
+	InformActiveArtifactChanged(itemID)
 end
 
 function lib:GetActiveArtifactID()
@@ -449,5 +449,5 @@ function lib:GetArtifactKnowledge()
 end
 
 function lib:ForceUpdate()
-	frame:InitializeScan("FORCE_UPDATE")
+	InitializeScan("FORCE_UPDATE")
 end
