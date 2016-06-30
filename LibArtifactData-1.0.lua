@@ -407,20 +407,20 @@ function private.PLAYER_SPECIALIZATION_CHANGED(event)
 	InformActiveArtifactChanged(itemID)
 end
 
-function lib:GetActiveArtifactID()
+function lib.GetActiveArtifactID()
 	return activeID
 end
 
-function lib:GetArtifactInfo(artifactID)
+function lib.GetArtifactInfo(_, artifactID)
 	artifactID = artifactID or equippedID
 	return artifactID, CopyTable(artifacts[artifactID])
 end
 
-function lib:GetAllArtifactsInfo()
+function lib.GetAllArtifactsInfo()
 	return CopyTable(artifacts)
 end
 
-function lib:GetNumObtainedArtifacts()
+function lib.GetNumObtainedArtifacts()
 	local numArtifacts = 0
 	for artifact in pairs(artifacts) do
 		if tonumber(artifact) then
@@ -431,7 +431,7 @@ function lib:GetNumObtainedArtifacts()
 	return numArtifacts
 end
 
-function lib:GetArtifactTraits(artifactID)
+function lib.GetArtifactTraits(_, artifactID)
 	artifactID = artifactID or equippedID
 	for itemID, data in pairs(artifacts) do
 		if itemID == artifactID then
@@ -440,7 +440,7 @@ function lib:GetArtifactTraits(artifactID)
 	end
 end
 
-function lib:GetArtifactRelics(artifactID)
+function lib.GetArtifactRelics(_, artifactID)
 	artifactID = artifactID or equippedID
 	for itemID, data in pairs(artifacts) do
 		if itemID == artifactID then
@@ -449,7 +449,7 @@ function lib:GetArtifactRelics(artifactID)
 	end
 end
 
-function lib:GetArtifactPower(artifactID)
+function lib.GetArtifactPower(_, artifactID)
 	artifactID = artifactID or equippedID
 	for itemID, data in pairs(artifacts) do
 		if itemID == artifactID then
@@ -458,10 +458,10 @@ function lib:GetArtifactPower(artifactID)
 	end
 end
 
-function lib:GetArtifactKnowledge()
+function lib.GetArtifactKnowledge()
 	return artifacts.knowledgeLevel, artifacts.knowledgeMultiplier
 end
 
-function lib:ForceUpdate()
+function lib.ForceUpdate()
 	InitializeScan("FORCE_UPDATE")
 end
