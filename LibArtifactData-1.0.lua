@@ -82,7 +82,7 @@ local function CopyTable(tbl)
 end
 
 local function PrepareForScan()
-	self:UnregisterEvent("ARTIFACT_UPDATE")
+	frame:UnregisterEvent("ARTIFACT_UPDATE")
 	local ArtifactFrame = _G.ArtifactFrame
 
 	if not ArtifactFrame or not ArtifactFrame:IsShown() then
@@ -94,7 +94,7 @@ local function PrepareForScan()
 end
 
 local function RestoreStateAfterScan()
-	self:RegisterEvent("ARTIFACT_UPDATE")
+	frame:RegisterEvent("ARTIFACT_UPDATE")
 	local ArtifactFrame = _G.ArtifactFrame
 
 	if not ArtifactFrame or not ArtifactFrame:IsShown() then
@@ -265,7 +265,7 @@ end
 
 local function ScanBank(numObtained)
 	PrepareForScan()
-	numObtained = self:ScanContainer(BANK_CONTAINER, numObtained)
+	numObtained = ScanContainer(BANK_CONTAINER, numObtained)
 	if numObtained > 0 then
 		IterateContainers(NUM_BAG_SLOTS + 1, NUM_BAG_SLOTS + NUM_BANKBAGSLOTS, numObtained)
 	end
