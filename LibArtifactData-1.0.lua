@@ -366,7 +366,7 @@ function private.ARTIFACT_XP_UPDATE(event)
 		artifact.numRanksPurchasable = numRanksPurchasable
 		artifact.powerForNextRank = maxPower - power
 		Debug(event, itemID, diff, unspentPower, power, maxPower, maxPower - power, numRanksPurchasable)
-		lib.callbacks:Fire("ARTIFACT_XP_UPDATED", itemID, diff, unspentPower, power, maxPower, maxPower - power, numRanksPurchasable)
+		lib.callbacks:Fire("ARTIFACT_POWER_CHANGED", itemID, diff, unspentPower, power, maxPower, maxPower - power, numRanksPurchasable)
 	end
 end
 
