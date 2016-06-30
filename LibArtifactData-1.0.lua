@@ -127,6 +127,11 @@ local function InformActiveArtifactChanged(artifactID)
 	end
 end
 
+local function InformTraitsChanged(artifactID)
+	Debug("ARTIFACT_TRAITS_CHANGED", artifactID, artifacts[artifactID].traits)
+	lib.callbacks:Fire("ARTIFACT_TRAITS_CHANGED", artifactID, CopyTable(artifacts[artifactID].traits))
+end
+
 local function StoreArtifact(artifactID, name, icon, unspentPower, numRanksPurchased, numRanksPurchasable, power, maxPower, traits, relics)
 	if not artifacts[artifactID] then
 		artifacts[artifactID] = {
@@ -328,6 +333,9 @@ function private.ARTIFACT_UPDATE(event, newItem)
 				oldRelics[i] = newRelic
 				Debug("ARTIFACT_RELIC_CHANGED", viewedID, i, newRelic)
 				lib.callbacks:Fire("ARTIFACT_RELIC_CHANGED", viewedID, i, CopyTable(newRelic))
+				-- if a relic changed, so did the traits
+				ScanTraits(viewedID)
+				InformTraitsChanged(viewedID)
 				break
 			end
 		end
@@ -347,8 +355,7 @@ function private.ARTIFACT_XP_UPDATE(event)
 		-- both learning traits and artifact respec trigger ARTIFACT_XP_UPDATE
 		-- however respec has a positive diff and learning traits has a negative one
 		ScanTraits(itemID)
-		Debug("ARTIFACT_TRAITS_UPDATED", event, itemID, numRanksPurchased, artifacts[itemID].traits)
-		lib.callbacks:Fire("ARTIFACT_TRAITS_UPDATED", itemID, numRanksPurchased, CopyTable(artifacts[itemID].traits))
+		InformTraitsChanged(itemID)
 	end
 
 	if diff ~= 0 then
