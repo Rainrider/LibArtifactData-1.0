@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "LibArtifactData-1.0", 3
+local MAJOR, MINOR = "LibArtifactData-1.0", 4
 
 assert(_G.LibStub, MAJOR .. " requires LibStub")
 local lib = _G.LibStub:NewLibrary(MAJOR, MINOR)
@@ -35,6 +35,7 @@ local GetArtifactKnowledgeLevel        = aUI.GetArtifactKnowledgeLevel
 local GetArtifactKnowledgeMultiplier   = aUI.GetArtifactKnowledgeMultiplier
 local GetContainerItemInfo             = _G.GetContainerItemInfo
 local GetContainerNumSlots             = _G.GetContainerNumSlots
+local GetCostForPointAtRank            = aUI.GetCostForPointAtRank
 local GetCurrencyInfo                  = _G.GetCurrencyInfo
 local GetEquippedArtifactInfo          = aUI.GetEquippedArtifactInfo
 local GetInventoryItemEquippedUnusable = _G.GetInventoryItemEquippedUnusable
@@ -460,6 +461,35 @@ end
 
 function lib.GetArtifactKnowledge()
 	return artifacts.knowledgeLevel, artifacts.knowledgeMultiplier
+end
+
+function lib.GetAcquiredArtifactPower(_, artifactID)
+	local total = 0
+
+	if artifactID then
+		local data = artifacts[artifactID]
+		total = total + data.unspentPower
+		local rank = 1
+		while rank <= data.numRanksPurchased do
+			total = total + GetCostForPointAtRank(rank)
+			rank = rank + 1
+		end
+
+		return total
+	end
+
+	for itemID, data in pairs(artifacts) do
+		if tonumber(itemID) then
+			total = total + data.unspentPower
+			local rank = 1
+			while rank <= data.numRanksPurchased do
+				total = total + GetCostForPointAtRank(rank)
+				rank = rank + 1
+			end
+		end
+	end
+
+	return total
 end
 
 function lib.ForceUpdate()
