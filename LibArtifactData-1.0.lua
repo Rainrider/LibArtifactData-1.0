@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "LibArtifactData-1.0", 4
+local MAJOR, MINOR = "LibArtifactData-1.0", 5
 
 assert(_G.LibStub, MAJOR .. " requires LibStub")
 local lib = _G.LibStub:NewLibrary(MAJOR, MINOR)
@@ -110,8 +110,8 @@ end
 
 local function InformEquippedArtifactChanged(artifactID)
 	if artifactID ~= equippedID then
-		Debug("ARTIFACT_EQUIPPED_CHANGED", equippedID, artifactID)
-		lib.callbacks:Fire("ARTIFACT_EQUIPPED_CHANGED", equippedID, artifactID)
+		Debug("ARTIFACT_EQUIPPED_CHANGED", artifactID, equippedID)
+		lib.callbacks:Fire("ARTIFACT_EQUIPPED_CHANGED", artifactID, equippedID)
 		equippedID = artifactID
 	end
 end
@@ -124,8 +124,8 @@ local function InformActiveArtifactChanged(artifactID)
 		activeID = nil
 	end
 	if oldActiveID ~= activeID then
-		Debug("ARTIFACT_ACTIVE_CHANGED", oldActiveID, activeID)
-		lib.callbacks:Fire("ARTIFACT_ACTIVE_CHANGED", oldActiveID, activeID)
+		Debug("ARTIFACT_ACTIVE_CHANGED", activeID, oldActiveID)
+		lib.callbacks:Fire("ARTIFACT_ACTIVE_CHANGED", activeID, oldActiveID)
 	end
 end
 
