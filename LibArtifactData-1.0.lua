@@ -309,6 +309,7 @@ local function InitializeScan(event)
 end
 
 function private.PLAYER_ENTERING_WORLD(event)
+	frame:UnregisterEvent(event)
 	_G.C_Timer.After(5, function()
 		InitializeScan(event)
 		frame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
