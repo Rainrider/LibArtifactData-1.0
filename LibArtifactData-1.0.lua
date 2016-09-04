@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "LibArtifactData-1.0", 5
+local MAJOR, MINOR = "LibArtifactData-1.0", 7
 
 assert(_G.LibStub, MAJOR .. " requires LibStub")
 local lib = _G.LibStub:NewLibrary(MAJOR, MINOR)
