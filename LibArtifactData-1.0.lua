@@ -225,6 +225,10 @@ end
 local function GetViewedArtifactData()
 	GetArtifactKnowledge()
 	local itemID, _, name, icon, unspentPower, numRanksPurchased = GetArtifactInfo() -- TODO: appearance stuff needed? altItemID ?
+	if not itemID then
+		Debug("|cffff0000ERROR:|r", "GetArtifactInfo() returned nil.")
+		return
+	end
 	viewedID = itemID
 	Debug("GetViewedArtifactData", name, itemID)
 	local numRanksPurchasable, power, maxPower = GetNumPurchasableTraits(numRanksPurchased, unspentPower)
@@ -348,6 +352,10 @@ function private.ARTIFACT_XP_UPDATE(event)
 	local numRanksPurchasable, power, maxPower = GetNumPurchasableTraits(numRanksPurchased, unspentPower)
 
 	local artifact = artifacts[itemID]
+	if not artifact then
+		Debug("|cffff0000ERROR:|r", "artifact", itemID, "not found.")
+		return
+	end
 	local diff = unspentPower - artifact.unspentPower
 
 	if numRanksPurchased ~= artifact.numRanksPurchased then
