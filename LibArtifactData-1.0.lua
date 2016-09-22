@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "LibArtifactData-1.0", 9
+local MAJOR, MINOR = "LibArtifactData-1.0", 10
 
 assert(_G.LibStub, MAJOR .. " requires LibStub")
 local lib = _G.LibStub:NewLibrary(MAJOR, MINOR)
@@ -480,7 +480,7 @@ function lib.GetAcquiredArtifactPower(_, artifactID)
 		local data = artifacts[artifactID]
 		total = total + data.unspentPower
 		local rank = 1
-		while rank <= data.numRanksPurchased do
+		while rank < data.numRanksPurchased do
 			total = total + GetCostForPointAtRank(rank)
 			rank = rank + 1
 		end
@@ -492,7 +492,7 @@ function lib.GetAcquiredArtifactPower(_, artifactID)
 		if tonumber(itemID) then
 			total = total + data.unspentPower
 			local rank = 1
-			while rank <= data.numRanksPurchased do
+			while rank < data.numRanksPurchased do
 				total = total + GetCostForPointAtRank(rank)
 				rank = rank + 1
 			end
