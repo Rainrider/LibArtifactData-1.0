@@ -307,6 +307,8 @@ local function InitializeScan(event)
 		end
 		RestoreStateAfterScan()
 	end
+	Debug("InitializeScan", "complete. Firing ARTIFACT_SCAN_COMPLETE event.")
+	lib.callbacks:Fire("ARTIFACT_SCAN_COMPLETE", numObtained)
 end
 
 function private.PLAYER_ENTERING_WORLD(event)
