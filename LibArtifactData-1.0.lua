@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "LibArtifactData-1.0", 14
+local MAJOR, MINOR = "LibArtifactData-1.0", 15
 
 assert(_G.LibStub, MAJOR .. " requires LibStub")
 local lib = _G.LibStub:NewLibrary(MAJOR, MINOR)
@@ -178,9 +178,9 @@ local function ScanTraits(artifactID)
 				currentRank = currentRank or info.currentRank,
 				maxRank = maxRank or info.maxRank,
 				bonusRanks = bonusRanks or info.maxRank,
-				isGold = isGold or info.isGold,
-				isStart = isStart or info.isStart,
-				isFinal = isFinal or info.isFinal,
+				isGold = isGold or isPatch72 and info.isGold,
+				isStart = isStart or isPatch72 and info.isStart,
+				isFinal = isFinal or isPatch72 and info.isFinal,
 				maxRanksFromTier = isPatch72 and info.numMaxRankBonusFromTier or 0,
 				tier = isPatch72 and info.tier or 1,
 			}
