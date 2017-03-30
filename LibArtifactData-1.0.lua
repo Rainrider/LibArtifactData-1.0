@@ -197,13 +197,13 @@ end
 local function ScanRelics(artifactID)
 	local relics = {}
 	for i = 1, GetNumRelicSlots() do
-		local name, icon, slotType, link = GetRelicInfo(i)
-		local isLocked = GetRelicLockedReason(i) and true or false
-		local itemID
-		if name then
-			itemID = strmatch(link, "item:(%d+):")
+		local isLocked, name, icon, slotType, link, itemID = GetRelicLockedReason(i) and true or false
+		if not isLocked then
+			name, icon, slotType, link = GetRelicInfo(i)
+			if link then
+				itemID = strmatch(link, "item:(%d+):")
+			end
 		end
-
 		relics[i] = { type = slotType, isLocked = isLocked, name = name, icon = icon, itemID = itemID, link = link }
 	end
 
