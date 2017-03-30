@@ -47,7 +47,7 @@ local GetNumRelicSlots                 = aUI.GetNumRelicSlots
 local GetPowerInfo                     = aUI.GetPowerInfo
 local GetPowers                        = aUI.GetPowers
 local GetRelicInfo                     = aUI.GetRelicInfo
-local GetRelicSlotType                 = aUI.GetRelicSlotType
+local GetRelicLockedReason             = aUI.GetRelicLockedReason
 local GetSpellInfo                     = _G.GetSpellInfo
 local HasArtifactEquipped              = _G.HasArtifactEquipped
 local IsAtForge                        = aUI.IsAtForge
@@ -197,9 +197,8 @@ end
 local function ScanRelics(artifactID)
 	local relics = {}
 	for i = 1, GetNumRelicSlots() do
-		local slotType = GetRelicSlotType(i)
-		local lockedReason, name, icon, link = GetRelicInfo(i)
-		local isLocked = lockedReason and true or false
+		local name, icon, slotType, link = GetRelicInfo(i)
+		local isLocked = GetRelicLockedReason(i) and true or false
 		local itemID
 		if name then
 			itemID = strmatch(link, "item:(%d+):")
