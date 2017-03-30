@@ -215,6 +215,7 @@ local function ScanRelics(artifactID)
 end
 
 local function GetArtifactKnowledge()
+	if viewedID == 133755 then return end -- exclude Underlight Angler
 	local lvl = GetArtifactKnowledgeLevel()
 	local mult = GetArtifactKnowledgeMultiplier()
 	if artifacts.knowledgeMultiplier ~= mult or artifacts.knowledgeLevel ~= lvl then
@@ -226,7 +227,6 @@ local function GetArtifactKnowledge()
 end
 
 local function GetViewedArtifactData()
-	GetArtifactKnowledge()
 	local itemID, altItemID, name, icon, unspentPower, numRanksPurchased, _, _, _, _, _, _, tier = GetArtifactInfo()
 	if not itemID then
 		Debug("|cffff0000ERROR:|r", "GetArtifactInfo() returned nil.")
@@ -243,6 +243,8 @@ local function GetViewedArtifactData()
 		InformEquippedArtifactChanged(itemID)
 		InformActiveArtifactChanged(itemID)
 	end
+
+	GetArtifactKnowledge()
 end
 
 local function ScanEquipped()
