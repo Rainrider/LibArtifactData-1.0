@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "LibArtifactData-1.0", 15
+local MAJOR, MINOR = "LibArtifactData-1.0", 16
 
 assert(_G.LibStub, MAJOR .. " requires LibStub")
 local lib = _G.LibStub:NewLibrary(MAJOR, MINOR)
@@ -88,6 +88,8 @@ local function PrepareForScan()
 	local ArtifactFrame = _G.ArtifactFrame
 	if ArtifactFrame and not ArtifactFrame:IsShown() then
 		ArtifactFrame:UnregisterEvent("ARTIFACT_UPDATE")
+		ArtifactFrame:UnregisterEvent("ARTIFACT_CLOSE")
+		ArtifactFrame:UnregisterEvent("ARTIFACT_MAX_RANKS_UPDATE")
 	end
 end
 
@@ -99,6 +101,8 @@ local function RestoreStateAfterScan()
 	if ArtifactFrame and not ArtifactFrame:IsShown() then
 		Clear()
 		ArtifactFrame:RegisterEvent("ARTIFACT_UPDATE")
+		ArtifactFrame:RegisterEvent("ARTIFACT_CLOSE")
+		ArtifactFrame:RegisterEvent("ARTIFACT_MAX_RANKS_UPDATE")
 	end
 end
 
