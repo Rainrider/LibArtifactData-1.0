@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "LibArtifactData-1.0", 16
+local MAJOR, MINOR = "LibArtifactData-1.0", 17
 
 assert(_G.LibStub, MAJOR .. " requires LibStub")
 local lib = _G.LibStub:NewLibrary(MAJOR, MINOR)
@@ -455,6 +455,21 @@ function lib.GetNumObtainedArtifacts()
 	end
 
 	return numArtifacts
+end
+
+function lib.GetArtifactTraitInfo(_, id, artifactID)
+	artifactID = artifactID or equippedID
+	local artifact = artifacts[artifactID]
+	if id and artifact then
+		local traits = artifact.traits
+		if not traits then return end
+		for i = 1, #traits do
+			local info = traits[i]
+			if id == info.traitID or id == info.spellID then
+				return CopyTable(info)
+			end
+		end
+	end
 end
 
 function lib.GetArtifactTraits(_, artifactID)
