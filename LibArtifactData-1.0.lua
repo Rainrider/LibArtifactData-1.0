@@ -439,6 +439,10 @@ function private.BANKFRAME_OPENED()
 end
 
 function private.CURRENCY_DISPLAY_UPDATE(event)
+	if artifacts.knowledgeLevel >= 40 then
+		return frame:UnregisterEvent(event)
+	end
+
 	local _, lvl = GetCurrencyInfo(1171)
 	if lvl ~= artifacts.knowledgeLevel then
 		artifacts.knowledgeLevel = lvl
