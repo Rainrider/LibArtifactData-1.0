@@ -353,7 +353,6 @@ function private.PLAYER_ENTERING_WORLD(event)
 	frame:RegisterEvent("BAG_UPDATE_DELAYED")
 	frame:RegisterEvent("BANKFRAME_OPENED")
 	frame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
-	frame:RegisterEvent("CURRENCY_DISPLAY_UPDATE")
 	frame:RegisterEvent("ARTIFACT_CLOSE")
 	frame:RegisterEvent("ARTIFACT_XP_UPDATE")
 	frame:RegisterUnitEvent("PLAYER_SPECIALIZATION_CHANGED", "player")
@@ -435,19 +434,6 @@ function private.BANKFRAME_OPENED()
 	local numObtained = GetNumObtainedArtifacts()
 	if numObtained > lib:GetNumObtainedArtifacts() then
 		ScanBank(numObtained)
-	end
-end
-
-function private.CURRENCY_DISPLAY_UPDATE(event)
-	if artifacts.knowledgeLevel >= 40 then
-		return frame:UnregisterEvent(event)
-	end
-
-	local _, lvl = GetCurrencyInfo(1171)
-	if lvl ~= artifacts.knowledgeLevel then
-		artifacts.knowledgeLevel = lvl
-		Debug("ARTIFACT_DATA_MISSING", event, lvl)
-		lib.callbacks:Fire("ARTIFACT_DATA_MISSING", "knowledge", lvl)
 	end
 end
 
