@@ -356,6 +356,9 @@ function private.PLAYER_ENTERING_WORLD(event)
 	frame:RegisterEvent("ARTIFACT_CLOSE")
 	frame:RegisterEvent("ARTIFACT_XP_UPDATE")
 	frame:RegisterUnitEvent("PLAYER_SPECIALIZATION_CHANGED", "player")
+	if _G.UnitLevel("player") < 110 then
+		frame:RegisterEvent("PLAYER_LEVEL_UP")
+	end
 end
 
 -- bagged artifact data becomes obtainable
@@ -435,6 +438,13 @@ function private.BANKFRAME_OPENED()
 	if numObtained > lib:GetNumObtainedArtifacts() then
 		ScanBank(numObtained)
 	end
+end
+
+function private.PLAYER_LEVEL_UP(event, level)
+	if level < 110 then return end
+
+	ScanEquipped()
+	frame:UnregisterEvent(event)
 end
 
 function private.PLAYER_EQUIPMENT_CHANGED(event, slot)
