@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "LibArtifactData-1.0", 18
+local MAJOR, MINOR = "LibArtifactData-1.0", 19
 
 assert(_G.LibStub, MAJOR .. " requires LibStub")
 local lib = _G.LibStub:NewLibrary(MAJOR, MINOR)
@@ -570,4 +570,21 @@ function lib.ForceUpdate()
 		ScanEquipped("FORCE_UPDATE")
 		IterateContainers(BACKPACK_CONTAINER, NUM_BAG_SLOTS, numObtained)
 	end
+end
+
+local function TraitsIterator(traits, index)
+	index = index and index + 1 or 1
+	local trait = traits[index]
+	if trait then
+		return index, trait.traitID, trait.spellID, trait.name, trait.icon, trait.currentRank, trait.maxRank,
+		       trait.bonusRanks, trait.isGold, trait.isStart, trait.isFinal
+	end
+end
+
+function lib.IterateTraits(_, artifactID)
+	artifactID = tonumber(artifactID) or equippedID
+	local artifact = artifacts[artifactID]
+	if not artifact then return function() return end end
+
+	return TraitsIterator, artifact.traits
 end
