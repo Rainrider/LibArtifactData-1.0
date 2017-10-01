@@ -203,8 +203,9 @@ end
 local function ScanRelics(artifactID, doNotInform)
 	local relics = artifactID and artifacts[artifactID] and artifacts[artifactID].relics or {}
 	local changedSlots = {}
+	local numRelicSlots = GetNumRelicSlots()
 
-	for i = 1, GetNumRelicSlots() do
+	for i = 1, numRelicSlots do
 		local isLocked, name, icon, slotType, link, itemID, rank, canAddTalent = GetRelicLockedReason(i) and true or false
 		if not isLocked then
 			name, icon, slotType, link = GetRelicInfo(i)
@@ -248,7 +249,7 @@ local function ScanRelics(artifactID, doNotInform)
 		end
 	end
 
-	if #changedSlots > 0 then
+	if #changedSlots > 0 or numRelicSlots == 0 then
 		ScanTraits(viewedID)
 		if not doNotInform then
 			InformTraitsChanged(viewedID)
