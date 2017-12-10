@@ -1,4 +1,5 @@
-local MAJOR, MINOR = "LibArtifactData-1.0", 19
+local _, ns = ...
+local MAJOR, MINOR = "LibArtifactData-1.0", 20
 
 assert(_G.LibStub, MAJOR .. " requires LibStub")
 local lib = _G.LibStub:NewLibrary(MAJOR, MINOR)
@@ -37,10 +38,10 @@ local GetArtifactKnowledgeMultiplier   = aUI.GetArtifactKnowledgeMultiplier
 local GetContainerItemInfo             = _G.GetContainerItemInfo
 local GetContainerNumSlots             = _G.GetContainerNumSlots
 local GetCostForPointAtRank            = aUI.GetCostForPointAtRank
-local GetCurrencyInfo                  = _G.GetCurrencyInfo
 local GetEquippedArtifactInfo          = aUI.GetEquippedArtifactInfo
 local GetInventoryItemEquippedUnusable = _G.GetInventoryItemEquippedUnusable
 local GetItemInfo                      = _G.GetItemInfo
+local GetItemSpell                     = _G.GetItemSpell
 local GetNumObtainedArtifacts          = aUI.GetNumObtainedArtifacts
 local GetNumPurchasableTraits          = _G.MainMenuBar_GetNumArtifactTraitsPurchasableFromXP
 local GetNumRelicSlots                 = aUI.GetNumRelicSlots
@@ -51,6 +52,7 @@ local GetRelicLockedReason             = aUI.GetRelicLockedReason
 local GetRelicSlotRankInfo             = aUI.GetRelicSlotRankInfo
 local GetSpellInfo                     = _G.GetSpellInfo
 local HasArtifactEquipped              = _G.HasArtifactEquipped
+local IsArtifactPowerItem              = _G.IsArtifactPowerItem
 local IsAtForge                        = aUI.IsAtForge
 local IsViewedArtifactEquipped         = aUI.IsViewedArtifactEquipped
 local SocketContainerItem              = _G.SocketContainerItem
@@ -559,6 +561,22 @@ function lib.GetAcquiredArtifactPower(_, artifactID)
 	end
 
 	return total
+end
+
+function lib.GetArtifactPowerFromItem(_, item)
+	local itemID, knowledgeLevel = tonumber(item), 1
+	if not itemID then
+		itemID, knowledgeLevel = item:match("item:(%d+).-(%d*):::|h")
+		if not itemID then return end
+		knowledgeLevel = tonumber(knowledgeLevel) or 1
+	end
+
+	if IsArtifactPowerItem(itemID) then
+		local _, _, spellID = GetItemSpell(itemID)
+		return ns.data.multiplier[knowledgeLevel] * (ns.data.spells[spellID] or 0)
+	elseif ns.data.items[itemID] then
+		return ns.data.multiplier[knowledgeLevel] * ns.data.items[itemID]
+	end
 end
 
 function lib.ForceUpdate()
