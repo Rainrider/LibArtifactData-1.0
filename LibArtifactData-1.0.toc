@@ -10,5 +10,4 @@
 LibStub\LibStub.lua
 CallbackHandler-1.0\CallbackHandler-1.0.lua
 
-data.lua
 LibArtifactData-1.0.lua
