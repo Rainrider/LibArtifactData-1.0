@@ -48,6 +48,7 @@ local HasArtifactEquipped                 = _G.HasArtifactEquipped
 local IsArtifactDisabled                  = aUI.IsArtifactDisabled
 local IsAtForge                           = aUI.IsAtForge
 local IsViewedArtifactEquipped            = aUI.IsViewedArtifactEquipped
+local ItemQuality                         = _G.Enum.ItemQuality
 local SocketContainerItem                 = _G.SocketContainerItem
 local SocketInventoryItem                 = _G.SocketInventoryItem
 
@@ -297,7 +298,7 @@ end
 local function ScanContainer(container, numObtained)
 	for slot = 1, GetContainerNumSlots(container) do
 		local _, _, _, quality, _, _, _, _, _, itemID = GetContainerItemInfo(container, slot)
-		if quality == Enum.ItemQuality.Artifact then
+		if quality == ItemQuality.Artifact then
 			local classID = select(12, GetItemInfo(itemID))
 			if classID == LE_ITEM_CLASS_WEAPON or classID == LE_ITEM_CLASS_ARMOR then
 				Debug("ARTIFACT_FOUND", "in", container, slot)
